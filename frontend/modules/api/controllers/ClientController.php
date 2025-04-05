@@ -108,14 +108,10 @@ class ClientController extends ActiveController
      */
     public function checkCreateAccess($action)
     {
-        // Временно отключаем проверку прав
+        if (!Yii::$app->user->can('createClient')) {
+            throw new ForbiddenHttpException('У вас нет прав на создание клиента');
+        }
         return true;
-        
-        // Исходный код проверки прав, закомментирован
-        // if (!Yii::$app->user->can('createClient')) {
-        //    throw new ForbiddenHttpException('У вас нет прав на создание клиента');
-        // }
-        // return true;
     }
     
     /**
@@ -127,14 +123,11 @@ class ClientController extends ActiveController
      */
     public function checkAccess($action, $model = null, $params = [])
     {
-        // Временно отключаем проверку прав
+        // Проверка прав доступа
+        if ($action === 'delete' && !Yii::$app->user->can('deleteClient')) {
+            throw new ForbiddenHttpException('У вас нет прав на удаление клиента');
+        }
         return true;
-        
-        // Исходный код проверки прав, закомментирован
-        // if ($action === 'delete' && !Yii::$app->user->can('deleteClient')) {
-        //    throw new ForbiddenHttpException('У вас нет прав на удаление клиента');
-        // }
-        // return true;
     }
 
     /**
@@ -146,14 +139,10 @@ class ClientController extends ActiveController
      */
     public function checkUpdateAccess($action, $model = null, $params = [])
     {
-        // Временно отключаем проверку прав
+        if (!Yii::$app->user->can('updateClient')) {
+            throw new ForbiddenHttpException('У вас нет прав на редактирование клиента');
+        }
         return true;
-        
-        // Исходный код проверки прав, закомментирован
-        // if (!Yii::$app->user->can('updateClient')) {
-        //    throw new ForbiddenHttpException('У вас нет прав на редактирование клиента');
-        // }
-        // return true;
     }
     
     /**
@@ -205,9 +194,9 @@ class ClientController extends ActiveController
     {
         $model = $this->findModel($id);
         
-        // if (!Yii::$app->user->can('deleteClient')) {
-        //     throw new ForbiddenHttpException('У вас нет прав на удаление клиента');
-        // }
+        if (!Yii::$app->user->can('deleteClient')) {
+            throw new ForbiddenHttpException('У вас нет прав на удаление клиента');
+        }
         
         $model->deleted_at = date('Y-m-d H:i:s');
         $model->deleted_by = Yii::$app->user->id;
@@ -231,10 +220,9 @@ class ClientController extends ActiveController
     {
         $model = $this->findModel($id, true);
         
-        // Временно отключаем проверку прав
-        // if (!Yii::$app->user->can('restoreClient')) {
-        //     throw new ForbiddenHttpException('У вас нет прав для восстановления клиента');
-        // }
+        if (!Yii::$app->user->can('restoreClient')) {
+            throw new ForbiddenHttpException('У вас нет прав для восстановления клиента');
+        }
         
         if (!$model->restore()) {
             throw new ServerErrorHttpException('Не удалось восстановить клиента');

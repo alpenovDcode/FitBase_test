@@ -107,14 +107,10 @@ class ClubController extends ActiveController
      */
     public function checkCreateAccess($action)
     {
-        // Временно отключаем проверку прав
+        if (!Yii::$app->user->can('createClub')) {
+            throw new ForbiddenHttpException('У вас нет прав на создание клуба');
+        }
         return true;
-        
-        // Исходный код проверки прав, закомментирован
-        // if (!Yii::$app->user->can('createClub')) {
-        //    throw new ForbiddenHttpException('У вас нет прав на создание клуба');
-        // }
-        // return true;
     }
     
     /**
@@ -126,14 +122,10 @@ class ClubController extends ActiveController
      */
     public function checkAccess($action, $model = null, $params = [])
     {
-        // Временно отключаем проверку прав
+        if ($action === 'delete' && !Yii::$app->user->can('deleteClub')) {
+            throw new ForbiddenHttpException('У вас нет прав на удаление клуба');
+        }
         return true;
-        
-        // Исходный код проверки прав, закомментирован
-        // if ($action === 'delete' && !Yii::$app->user->can('deleteClub')) {
-        //    throw new ForbiddenHttpException('У вас нет прав на удаление клуба');
-        // }
-        // return true;
     }
 
     /**
@@ -145,14 +137,10 @@ class ClubController extends ActiveController
      */
     public function checkUpdateAccess($action, $model = null, $params = [])
     {
-        // Временно отключаем проверку прав
+        if (!Yii::$app->user->can('updateClub')) {
+            throw new ForbiddenHttpException('У вас нет прав на редактирование клуба');
+        }
         return true;
-        
-        // Исходный код проверки прав, закомментирован
-        // if (!Yii::$app->user->can('updateClub')) {
-        //    throw new ForbiddenHttpException('У вас нет прав на редактирование клуба');
-        // }
-        // return true;
     }
     
     /**
@@ -165,10 +153,9 @@ class ClubController extends ActiveController
     {
         $model = $this->findModel($id);
         
-        // Временно отключаем проверку прав
-        // if (!Yii::$app->user->can('deleteClub')) {
-        //     throw new ForbiddenHttpException('У вас нет прав на удаление клуба');
-        // }
+        if (!Yii::$app->user->can('deleteClub')) {
+            throw new ForbiddenHttpException('У вас нет прав на удаление клуба');
+        }
         
         $model->deleted_at = date('Y-m-d H:i:s');
         $model->deleted_by = Yii::$app->user->id;
@@ -232,10 +219,9 @@ class ClubController extends ActiveController
     {
         $model = $this->findModel($id, true);
         
-        // Временно отключаем проверку прав
-        // if (!Yii::$app->user->can('restoreClub')) {
-        //     throw new ForbiddenHttpException('У вас нет прав для восстановления клуба');
-        // }
+        if (!Yii::$app->user->can('restoreClub')) {
+            throw new ForbiddenHttpException('У вас нет прав для восстановления клуба');
+        }
         
         if (!$model->restore()) {
             throw new ServerErrorHttpException('Не удалось восстановить клуб');
