@@ -1,0 +1,18 @@
+RewriteEngine on
+
+# Если файл или директория существуют, используй их напрямую
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Добавляем заголовки CORS для всех запросов
+Header always set Access-Control-Allow-Origin "*"
+Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+Header always set Access-Control-Allow-Headers "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+
+# Сразу отвечаем 200 на OPTIONS запросы (CORS preflight)
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+RewriteCond %{REQUEST_METHOD} OPTIONS
+RewriteRule .* - [R=200,L]
+
+# Все остальные запросы перенаправляем на index.php
+RewriteRule . index.php 

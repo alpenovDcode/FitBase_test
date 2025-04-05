@@ -3,65 +3,63 @@
 namespace backend\controllers;
 
 use common\models\Club;
-use yii\data\ActiveDataProvider;
+use common\models\search\ClubSearch;
+use Yii;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
+use yii\filters\AccessControl;
 
 /**
- * ClubController implements the CRUD actions for Club model.
+ * ClubController реализует CRUD-операции для модели Club.
  */
 class ClubController extends Controller
 {
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function behaviors()
     {
-        return array_merge(
-            parent::behaviors(),
-            [
-                'verbs' => [
-                    'class' => VerbFilter::className(),
-                    'actions' => [
-                        'delete' => ['POST'],
+        return [
+            'access' => [
+                'class' => AccessControl::class,
+                'rules' => [
+                    [
+                        'allow' => true,
+                        'roles' => ['@'],
                     ],
                 ],
-            ]
-        );
+            ],
+            'verbs' => [
+                'class' => VerbFilter::class,
+                'actions' => [
+                    'delete' => ['POST'],
+                    'restore' => ['POST'],
+                ],
+            ],
+        ];
     }
 
     /**
-     * Lists all Club models.
-     *
-     * @return string
+     * Отображает список всех Club моделей.
+     * @return mixed
      */
     public function actionIndex()
     {
-        $dataProvider = new ActiveDataProvider([
-            'query' => Club::find(),
-            /*
-            'pagination' => [
-                'pageSize' => 50
-            ],
-            'sort' => [
-                'defaultOrder' => [
-                    'id' => SORT_DESC,
-                ]
-            ],
-            */
-        ]);
+        $searchModel = new ClubSearch();
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
         return $this->render('index', [
+            'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
         ]);
     }
 
     /**
-     * Displays a single Club model.
-     * @param int $id ID
-     * @return string
-     * @throws NotFoundHttpException if the model cannot be found
+     * Отображает отдельную модель Club.
+     * @param integer $id
+     * @return mixed
+     * @throws NotFoundHttpException если модель не найдена
      */
     public function actionView($id)
     {
@@ -71,20 +69,17 @@ class ClubController extends Controller
     }
 
     /**
-     * Creates a new Club model.
-     * If creation is successful, the browser will be redirected to the 'view' page.
-     * @return string|\yii\web\Response
+     * Создает новую модель Club.
+     * Если создание прошло успешно, браузер будет перенаправлен на страницу 'view'.
+     * @return mixed
      */
     public function actionCreate()
     {
         $model = new Club();
 
-        if ($this->request->isPost) {
-            if ($model->load($this->request->post()) && $model->save()) {
-                return $this->redirect(['view', 'id' => $model->id]);
-            }
-        } else {
-            $model->loadDefaultValues();
+        if ($model->load(Yii::$app->request->post()) && $model->save()) {
+            Yii::$app->session->setFlash('success', 'Клуб успешно создан');
+            return $this->redirect(['view', 'id' => $model->id]);
         }
 
         return $this->render('create', [
@@ -93,17 +88,18 @@ class ClubController extends Controller
     }
 
     /**
-     * Updates an existing Club model.
-     * If update is successful, the browser will be redirected to the 'view' page.
-     * @param int $id ID
-     * @return string|\yii\web\Response
-     * @throws NotFoundHttpException if the model cannot be found
+     * Обновляет существующую модель Club.
+     * Если обновление прошло успешно, браузер будет перенаправлен на страницу 'view'.
+     * @param integer $id
+     * @return mixed
+     * @throws NotFoundHttpException если модель не найдена
      */
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
 
-        if ($this->request->isPost && $model->load($this->request->post()) && $model->save()) {
+        if ($model->load(Yii::$app->request->post()) && $model->save()) {
+            Yii::$app->session->setFlash('success', 'Клуб успешно обновлен');
             return $this->redirect(['view', 'id' => $model->id]);
         }
 
@@ -113,32 +109,56 @@ class ClubController extends Controller
     }
 
     /**
-     * Deletes an existing Club model.
-     * If deletion is successful, the browser will be redirected to the 'index' page.
-     * @param int $id ID
-     * @return \yii\web\Response
-     * @throws NotFoundHttpException if the model cannot be found
+     * Удаляет существующую модель Club.
+     * Если удаление прошло успешно, браузер будет перенаправлен на страницу 'index'.
+     * @param integer $id
+     * @return mixed
+     * @throws NotFoundHttpException если модель не найдена
      */
     public function actionDelete($id)
     {
-        $this->findModel($id)->delete();
+        $model = $this->findModel($id);
+        $model->delete();
 
+        Yii::$app->session->setFlash('success', 'Клуб успешно удален');
         return $this->redirect(['index']);
+    }
+    
+    /**
+     * Восстанавливает мягко удаленную модель Club.
+     * @param integer $id
+     * @return mixed
+     * @throws NotFoundHttpException если модель не найдена
+     */
+    public function actionRestore($id)
+    {
+        $model = $this->findModel($id, true);
+        $model->restore();
+
+        Yii::$app->session->setFlash('success', 'Клуб успешно восстановлен');
+        return $this->redirect(['view', 'id' => $model->id]);
     }
 
     /**
-     * Finds the Club model based on its primary key value.
-     * If the model is not found, a 404 HTTP exception will be thrown.
-     * @param int $id ID
-     * @return Club the loaded model
-     * @throws NotFoundHttpException if the model cannot be found
+     * Находит модель Club по её первичному ключу.
+     * Если модель не найдена, будет выброшено исключение 404 HTTP.
+     * @param integer $id
+     * @param bool $withDeleted Искать ли среди удаленных записей
+     * @return Club загруженная модель
+     * @throws NotFoundHttpException если модель не найдена
      */
-    protected function findModel($id)
+    protected function findModel($id, $withDeleted = false)
     {
-        if (($model = Club::findOne(['id' => $id])) !== null) {
+        $query = Club::find()->where(['id' => $id]);
+        
+        if ($withDeleted) {
+            $query->withDeleted();
+        }
+        
+        if (($model = $query->one()) !== null) {
             return $model;
         }
 
-        throw new NotFoundHttpException('The requested page does not exist.');
+        throw new NotFoundHttpException('Запрошенная страница не найдена.');
     }
 }

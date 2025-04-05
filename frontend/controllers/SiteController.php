@@ -17,7 +17,7 @@ use frontend\models\SignupForm;
 use frontend\models\ContactForm;
 
 /**
- * Site controller
+ * Контроллер сайта
  */
 class SiteController extends Controller
 {
@@ -69,7 +69,50 @@ class SiteController extends Controller
     }
 
     /**
-     * Displays homepage.
+     * Отображение Vue приложения
+     *
+     * @return string
+     */
+    public function actionVueApp()
+    {
+        $this->layout = false;
+        
+        $vueAppPath = Yii::getAlias('@frontend/web/vue-app.html');
+        
+        if (file_exists($vueAppPath)) {
+            // Получаем содержимое HTML файла
+            $htmlContent = file_get_contents($vueAppPath);
+            
+            // Определяем текущий домен для API запросов
+            $currentDomain = Yii::$app->request->hostInfo;
+            $apiDomain = strpos($currentDomain, ':21080') !== false 
+                ? str_replace(':21080', ':8081', $currentDomain) 
+                : $currentDomain;
+            
+            $apiConfig = "<script>
+// Настройки API
+window.API_CONFIG = {
+    baseUrl: '{$apiDomain}/api',
+    authLogin: '{$apiDomain}/api/auth/login',
+    authLogout: '{$apiDomain}/api/auth/logout',
+    authMe: '{$apiDomain}/api/auth/me'
+};
+console.log('API config:', window.API_CONFIG);
+</script>";
+            
+            // Добавляем скрипт после открывающего тега <head>
+            $htmlContent = preg_replace('/<head>/', '<head>' . "\n" . $apiConfig, $htmlContent);
+            
+            // Возвращаем скорректированный HTML
+            return $htmlContent;
+        }
+        
+        // Если файл не найден, выводим простое сообщение
+        return '<h1>Vue приложение не найдено</h1>';
+    }
+
+    /**
+     * Отображение главной страницы
      *
      * @return mixed
      */
@@ -79,7 +122,7 @@ class SiteController extends Controller
     }
 
     /**
-     * Logs in a user.
+     * Авторизация пользователя.
      *
      * @return mixed
      */
@@ -102,7 +145,7 @@ class SiteController extends Controller
     }
 
     /**
-     * Logs out the current user.
+     * Выход текущего пользователя из системы.
      *
      * @return mixed
      */
@@ -114,7 +157,7 @@ class SiteController extends Controller
     }
 
     /**
-     * Displays contact page.
+     * Отображает страницу контактов.
      *
      * @return mixed
      */
@@ -123,9 +166,9 @@ class SiteController extends Controller
         $model = new ContactForm();
         if ($model->load(Yii::$app->request->post()) && $model->validate()) {
             if ($model->sendEmail(Yii::$app->params['adminEmail'])) {
-                Yii::$app->session->setFlash('success', 'Thank you for contacting us. We will respond to you as soon as possible.');
+                Yii::$app->session->setFlash('success', 'Спасибо за обращение к нам. Мы ответим вам как можно скорее.');
             } else {
-                Yii::$app->session->setFlash('error', 'There was an error sending your message.');
+                Yii::$app->session->setFlash('error', 'Произошла ошибка при отправке вашего сообщения.');
             }
 
             return $this->refresh();
@@ -137,7 +180,7 @@ class SiteController extends Controller
     }
 
     /**
-     * Displays about page.
+     * Отображает страницу "О нас".
      *
      * @return mixed
      */
@@ -147,7 +190,7 @@ class SiteController extends Controller
     }
 
     /**
-     * Signs user up.
+     * Регистрация пользователя.
      *
      * @return mixed
      */
@@ -155,7 +198,7 @@ class SiteController extends Controller
     {
         $model = new SignupForm();
         if ($model->load(Yii::$app->request->post()) && $model->signup()) {
-            Yii::$app->session->setFlash('success', 'Thank you for registration. Please check your inbox for verification email.');
+            Yii::$app->session->setFlash('success', 'Спасибо за регистрацию. Пожалуйста, проверьте вашу электронную почту для подтверждения.');
             return $this->goHome();
         }
 
@@ -165,7 +208,7 @@ class SiteController extends Controller
     }
 
     /**
-     * Requests password reset.
+     * Запрос на сброс пароля.
      *
      * @return mixed
      */
@@ -174,12 +217,12 @@ class SiteController extends Controller
         $model = new PasswordResetRequestForm();
         if ($model->load(Yii::$app->request->post()) && $model->validate()) {
             if ($model->sendEmail()) {
-                Yii::$app->session->setFlash('success', 'Check your email for further instructions.');
+                Yii::$app->session->setFlash('success', 'Проверьте вашу электронную почту для дальнейших инструкций.');
 
                 return $this->goHome();
             }
 
-            Yii::$app->session->setFlash('error', 'Sorry, we are unable to reset password for the provided email address.');
+            Yii::$app->session->setFlash('error', 'К сожалению, мы не можем сбросить пароль для указанного адреса электронной почты.');
         }
 
         return $this->render('requestPasswordResetToken', [
@@ -188,7 +231,7 @@ class SiteController extends Controller
     }
 
     /**
-     * Resets password.
+     * Сброс пароля.
      *
      * @param string $token
      * @return mixed
@@ -203,7 +246,7 @@ class SiteController extends Controller
         }
 
         if ($model->load(Yii::$app->request->post()) && $model->validate() && $model->resetPassword()) {
-            Yii::$app->session->setFlash('success', 'New password saved.');
+            Yii::$app->session->setFlash('success', 'Новый пароль сохранен.');
 
             return $this->goHome();
         }
@@ -214,7 +257,7 @@ class SiteController extends Controller
     }
 
     /**
-     * Verify email address
+     * Подтверждение адреса электронной почты
      *
      * @param string $token
      * @throws BadRequestHttpException
@@ -228,16 +271,16 @@ class SiteController extends Controller
             throw new BadRequestHttpException($e->getMessage());
         }
         if (($user = $model->verifyEmail()) && Yii::$app->user->login($user)) {
-            Yii::$app->session->setFlash('success', 'Your email has been confirmed!');
+            Yii::$app->session->setFlash('success', 'Ваш email подтвержден!');
             return $this->goHome();
         }
 
-        Yii::$app->session->setFlash('error', 'Sorry, we are unable to verify your account with provided token.');
+        Yii::$app->session->setFlash('error', 'К сожалению, мы не можем подтвердить ваш аккаунт с предоставленным токеном.');
         return $this->goHome();
     }
 
     /**
-     * Resend verification email
+     * Повторная отправка письма для подтверждения email
      *
      * @return mixed
      */
@@ -246,14 +289,46 @@ class SiteController extends Controller
         $model = new ResendVerificationEmailForm();
         if ($model->load(Yii::$app->request->post()) && $model->validate()) {
             if ($model->sendEmail()) {
-                Yii::$app->session->setFlash('success', 'Check your email for further instructions.');
+                Yii::$app->session->setFlash('success', 'Проверьте вашу электронную почту для дальнейших инструкций.');
                 return $this->goHome();
             }
-            Yii::$app->session->setFlash('error', 'Sorry, we are unable to resend verification email for the provided email address.');
+            Yii::$app->session->setFlash('error', 'К сожалению, мы не можем повторно отправить письмо для подтверждения на указанный адрес электронной почты.');
         }
 
         return $this->render('resendVerificationEmail', [
             'model' => $model
         ]);
+    }
+
+    /**
+     * API метод авторизации для поддержки прямого логина
+     *
+     * @return \yii\web\Response
+     */
+    public function actionLoginApi()
+    {
+        \Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        
+        $model = new LoginForm();
+        if ($model->load(Yii::$app->request->post(), '') && $model->login()) {
+            $user = Yii::$app->user->identity;
+            return [
+                'success' => true,
+                'token' => $user->getAuthKey(),
+                'user' => [
+                    'id' => $user->id,
+                    'username' => $user->username,
+                    'email' => $user->email,
+                    'created_at' => $user->created_at,
+                ]
+            ];
+        } else {
+            Yii::$app->response->statusCode = 401;
+            return [
+                'success' => false,
+                'message' => 'Ошибка входа. Проверьте логин и пароль.',
+                'errors' => $model->getErrors()
+            ];
+        }
     }
 }

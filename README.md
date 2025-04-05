@@ -1,60 +1,173 @@
-<p align="center">
-    <a href="https://github.com/yiisoft" target="_blank">
-        <img src="https://avatars0.githubusercontent.com/u/993323" height="100px">
-    </a>
-    <h1 align="center">Yii 2 Advanced Project Template</h1>
-    <br>
-</p>
+# FitBase - система управления фитнес-клубами
 
-Yii 2 Advanced Project Template is a skeleton [Yii 2](https://www.yiiframework.com/) application best for
-developing complex Web applications with multiple tiers.
+## Описание проекта
 
-The template includes three tiers: front end, back end, and console, each of which
-is a separate Yii application.
+FitBase представляет собой информационную систему для управления сетью фитнес-клубов, реализованную на базе фреймворка Yii2 с использованием Vue.js для интерфейса пользователя.
 
-The template is designed to work in a team development environment. It supports
-deploying the application in different environments.
+## Функциональность
 
-Documentation is at [docs/guide/README.md](docs/guide/README.md).
+- **Управление клубами**: создание, редактирование, удаление фитнес-клубов с полной информацией
+- **Управление клиентами**: регистрация клиентов с привязкой к клубам, редактирование профилей и управление статусами
+- **Аналитика и статистика**: отчеты по клубам, анализ клиентской базы
+- **Система прав доступа**: разграничение функций администраторов и менеджеров (RBAC)
+- **Современный интерфейс**: одностраничное приложение на Vue.js с интуитивно понятным управлением
+- **Полноценное REST API**: для интеграции с мобильными приложениями и внешними сервисами
 
-[![Latest Stable Version](https://img.shields.io/packagist/v/yiisoft/yii2-app-advanced.svg)](https://packagist.org/packages/yiisoft/yii2-app-advanced)
-[![Total Downloads](https://img.shields.io/packagist/dt/yiisoft/yii2-app-advanced.svg)](https://packagist.org/packages/yiisoft/yii2-app-advanced)
-[![build](https://github.com/yiisoft/yii2-app-advanced/workflows/build/badge.svg)](https://github.com/yiisoft/yii2-app-advanced/actions?query=workflow%3Abuild)
+## Технологии
 
-DIRECTORY STRUCTURE
--------------------
+- **Backend**: PHP 8.2, Yii2 Framework (Advanced Template)
+- **Frontend**: Vue.js 2, HTML5, CSS3
+- **База данных**: MySQL 8.0
+- **Инфраструктура**: Docker, Docker Compose
+- **Аутентификация**: Bearer Token
 
+## Структура проекта
+
+Проект основан на архитектуре Yii2 Advanced:
+
+- **common** - общие модели, компоненты и конфигурации
+- **frontend** - публичная часть приложения и REST API
+- **backend** - административная панель
+- **console** - консольные команды, миграции базы данных
+- **docker** - настройки Docker для разработки и развертывания
+
+## Установка и запуск
+
+### Требования
+
+- Docker и Docker Compose
+
+### Шаги установки
+
+1. Клонируйте репозиторий:
+```bash
+git clone https://github.com/username/fitbase.git
+cd fitbase
 ```
-common
-    config/              contains shared configurations
-    mail/                contains view files for e-mails
-    models/              contains model classes used in both backend and frontend
-    tests/               contains tests for common classes    
-console
-    config/              contains console configurations
-    controllers/         contains console controllers (commands)
-    migrations/          contains database migrations
-    models/              contains console-specific model classes
-    runtime/             contains files generated during runtime
-backend
-    assets/              contains application assets such as JavaScript and CSS
-    config/              contains backend configurations
-    controllers/         contains Web controller classes
-    models/              contains backend-specific model classes
-    runtime/             contains files generated during runtime
-    tests/               contains tests for backend application    
-    views/               contains view files for the Web application
-    web/                 contains the entry script and Web resources
-frontend
-    assets/              contains application assets such as JavaScript and CSS
-    config/              contains frontend configurations
-    controllers/         contains Web controller classes
-    models/              contains frontend-specific model classes
-    runtime/             contains files generated during runtime
-    tests/               contains tests for frontend application
-    views/               contains view files for the Web application
-    web/                 contains the entry script and Web resources
-    widgets/             contains frontend widgets
-vendor/                  contains dependent 3rd-party packages
-environments/            contains environment-based overrides
+
+2. Запустите контейнеры:
+```bash
+docker-compose up -d
 ```
+
+3. Выполните миграции базы данных:
+```bash
+docker-compose exec backend php yii migrate/fresh --interactive=0
+```
+
+4. Приложение будет доступно по адресам:
+   - Vue-приложение: http://localhost:8081/vue-app
+   - Административная панель: http://localhost:21080
+   - REST API: http://localhost:8081/api
+
+### Детали доступа
+
+Для входа в систему используйте учетные данные:
+- **Логин**: admin
+- **Пароль**: admin123
+
+## Управление контейнерами
+
+- Для остановки контейнеров:
+```bash
+docker-compose down
+```
+
+- Для перезапуска:
+```bash
+docker-compose restart
+```
+
+- Для просмотра логов:
+```bash
+docker-compose logs -f
+```
+
+- Для проверки статуса контейнеров:
+```bash
+docker-compose ps
+```
+
+## Решение проблем
+
+Если у вас возникают проблемы с правами доступа в контейнерах, выполните:
+```bash
+docker-compose exec frontend chown -R www-data:www-data /app
+docker-compose exec backend chown -R www-data:www-data /app
+```
+
+## Работа с API
+
+API доступно по базовому пути `/api` и требует авторизации через Bearer Token.
+
+### Аутентификация
+
+Для получения токена аутентификации выполните POST-запрос на `/api/auth/login`:
+```json
+{
+  "username": "admin",
+  "password": "admin123"
+}
+```
+
+Затем используйте полученный токен в заголовке `Authorization: Bearer {token}`.
+
+### Основные эндпоинты
+
+| Метод | Эндпоинт | Описание |
+|-------|----------|----------|
+| GET | `/api/club` | Получение списка клубов |
+| POST | `/api/club/create` | Создание нового клуба |
+| PUT | `/api/club/{id}/update` | Обновление клуба |
+| DELETE | `/api/club/{id}/delete` | Удаление клуба |
+| GET | `/api/client` | Получение списка клиентов |
+| POST | `/api/client/create` | Создание нового клиента |
+| PUT | `/api/client/{id}/update` | Обновление клиента |
+| DELETE | `/api/client/{id}/delete` | Удаление клиента |
+
+### Формат данных
+
+#### Клуб (Club)
+```json
+{
+  "name": "Название клуба",
+  "address": "Адрес клуба",
+  "phone": "Телефон",
+  "email": "club@example.com"
+}
+```
+
+#### Клиент (Client)
+```json
+{
+  "name": "Имя",
+  "surname": "Фамилия",
+  "phone": "Телефон",
+  "email": "client@example.com",
+  "gender": "M",
+  "club_id": 1
+}
+```
+
+## Дополнительные возможности
+
+### Расширение функциональности Docker
+
+Вы можете подключить дополнительные сервисы, например phpMyAdmin или MailHog, добавив их в docker-compose.yml.
+
+### Настройка базы данных
+
+- База данных MySQL доступна на порту 3306
+- Параметры подключения: хост: localhost, база данных: fitbase, пользователь: fitbase, пароль: fitbasePwd123
+- Конфигурация PHP находится в файле `docker/php/php.ini`
+- Для изменения настроек MySQL используйте файлы в директории `docker/mysql/init/`
+
+## Система прав
+
+В системе предусмотрены следующие роли:
+- **admin** - полный доступ ко всем функциям системы
+- **manager** - управление клиентами и ограниченный доступ к клубам
+
+## Лицензия
+
+Проект распространяется под [MIT License](LICENSE.md).

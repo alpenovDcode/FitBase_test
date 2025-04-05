@@ -11,10 +11,17 @@ return [
     'basePath' => dirname(__DIR__),
     'controllerNamespace' => 'backend\controllers',
     'bootstrap' => ['log'],
-    'modules' => [],
+    'modules' => [
+        'api' => [
+            'class' => 'backend\modules\api\Module',
+        ],
+    ],
     'components' => [
         'request' => [
             'csrfParam' => '_csrf-backend',
+            'parsers' => [
+                'application/json' => 'yii\web\JsonParser',
+            ],
         ],
         'user' => [
             'identityClass' => 'common\models\User',
@@ -22,7 +29,6 @@ return [
             'identityCookie' => ['name' => '_identity-backend', 'httpOnly' => true],
         ],
         'session' => [
-            // this is the name of the session cookie used for login on the backend
             'name' => 'advanced-backend',
         ],
         'log' => [
@@ -40,17 +46,35 @@ return [
         'urlManager' => [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
+            'enableStrictParsing' => false,
             'rules' => [
-                'clubs' => 'club/index',
-                'clubs/<id:\d+>' => 'club/view',
-                'clubs/create' => 'club/create',
-                'clubs/<id:\d+>/update' => 'club/update',
-                'clubs/<id:\d+>/delete' => 'club/delete',
-                'clients' => 'client/index',
-                'clients/<id:\d+>' => 'client/view',
-                'clients/create' => 'client/create',
-                'clients/<id:\d+>/update' => 'client/update',
-                'clients/<id:\d+>/delete' => 'client/delete',
+                'vue-app' => 'site/vue-app',
+                'site/login-api' => 'site/login-api',
+                // API module
+                'api/<controller:[\w-]+>/<action:[\w-]+>/<id:\d+>' => 'api/<controller>/<action>',
+                'api/<controller:[\w-]+>/<action:[\w-]+>' => 'api/<controller>/<action>',
+                'api/<controller:[\w-]+>' => 'api/<controller>/index',
+                
+                // Специальные правила для API
+                'api/auth/login' => 'api/auth/login',
+                'api/auth/logout' => 'api/auth/logout',
+                'api/auth/me' => 'api/auth/me',
+                'api/auth/refresh-token' => 'api/auth/refresh-token',
+                'api/auth/options' => 'api/auth/options',
+                
+                'api/client/restore/<id:\d+>' => 'api/client/restore',
+                'api/client/clubs/<id:\d+>' => 'api/client/clubs',
+                'api/client/stats' => 'api/client/stats',
+                'api/client/export' => 'api/client/export',
+                
+                'api/club/restore/<id:\d+>' => 'api/club/restore',
+                'api/club/clients/<id:\d+>' => 'api/club/clients',
+                'api/club/stats' => 'api/club/stats',
+                
+                // Default routes
+                '<controller:\w+>/<id:\d+>' => '<controller>/view',
+                '<controller:\w+>/<action:\w+>/<id:\d+>' => '<controller>/<action>',
+                '<controller:\w+>/<action:\w+>' => '<controller>/<action>',
             ],
         ],
     ],

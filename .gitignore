@@ -41,3 +41,81 @@ phpunit.phar
 /backend/web/index.php
 /backend/web/index-test.php
 /backend/web/robots.txt
+
+# Логи и временные файлы
+/runtime
+/frontend/runtime/*
+/backend/runtime/*
+/console/runtime/*
+/common/runtime/*
+*.log
+
+# Кэш
+*/assets/*
+*/web/assets/*
+
+# Файлы окружения
+.env
+*.local
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Docker
+docker-compose.override.yml
+.docker/.env
+
+# Файлы сессий и кэша PHP
+/sessions
+*.sess
+
+# Файлы базы данных для локальной разработки
+*.sqlite
+*.db
+
+# Файлы загрузки
+/uploads
+/frontend/web/uploads
+/backend/web/uploads
+
+# Файлы node.js
+/node_modules
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+/common/config/main-local.php
+/common/config/params-local.php
+/common/config/test-local.php
+/common/config/codeception-local.php
+/frontend/config/main-local.php
+/frontend/config/params-local.php
+/frontend/config/test-local.php
+/frontend/config/codeception-local.php
+/backend/config/main-local.php
+/backend/config/params-local.php
+/backend/config/test-local.php
+/backend/config/codeception-local.php
+/console/config/main-local.php
+/console/config/params-local.php
+/console/config/test-local.php
+/console/config/codeception-local.php
+
+/frontend/tests/_output/*
+/frontend/tests/_support/_generated/*
+/backend/tests/_output/*
+/backend/tests/_support/_generated/*
+/common/tests/_output/*
+/common/tests/_support/_generated/*
+/console/tests/_output/*
+/console/tests/_support/_generated/*
+
+# Yii2 debug module
+/backend/web/debug/*
+/frontend/web/debug/*
+
+# Сохраним шаблоны окружений, но исключим их локальные файлы
+# /environments
+/environments/*/frontend/web/index*.php
+/environments/*/backend/web/index*.php
